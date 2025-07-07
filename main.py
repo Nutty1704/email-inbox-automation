@@ -1,4 +1,5 @@
 import os
+import logging
 from dotenv import load_dotenv
 from datetime import datetime
 from services.email_service import EmailService
@@ -19,11 +20,16 @@ def main():
     supabase_url = os.getenv('SUPABASE_URL')
     supabase_key = os.getenv('SUPABASE_KEY')
     
+    # Set up logging
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logger = logging.getLogger(__name__)
+    
     if not all([email_address, password, gemini_key, supabase_url, supabase_key]):
-        print("Missing required environment variables")
-        print("Required: GMAIL_USERNAME, GMAIL_PASSWORD, GEMINI_API_KEY, SUPABASE_URL, SUPABASE_KEY")
+        logger.info("Missing required environment variables")
+        # print("Required: GMAIL_USERNAME, GMAIL_PASSWORD, GEMINI_API_KEY, SUPABASE_URL, SUPABASE_KEY")
         return
     
+
     # Initialize services
     email_service = EmailService(email_address, password)
     ai_service = AIService(gemini_key)
@@ -37,46 +43,32 @@ def main():
                 or EmailService.get_default_since_time()
             )
             
-            print(f"Fetching emails since: {last_run}")
+            logger.info(f"Fetching emails since: {last_run}")
             
             fetch_time = datetime.now()
             # Fetch emails since the timestamp
             emails = mail_service.get_emails_since(since=last_run)
             
             if not emails:
-                print("No emails could be processed")
+                # print("No emails could be processed")
                 return
             
-            print(f"Successfully processed {len(emails)} emails")
+            logger.info(f"Successfully processed {len(emails)} emails")
                         
             # AI analysis
-            print("Analyzing emails with AI...")
+            # print("Analyzing emails with AI...")
             summary = ai_service.summarize_emails(emails)
             
-            print(f"AI found {summary['total_professional_emails']} professional emails")
-            print(f"Job-related: {summary['job_emails']}")
-            print(f"Urgent: {summary['urgent_count']}")
+            # print(f"AI found {summary['total_professional_emails']} professional emails")
+            # print(f"Job-related: {summary['job_emails']}")
+            # print(f"Urgent: {summary['urgent_count']}")
             
             # Save to database
-            print("Saving to database...")
+            # print("Saving to database...")
             session_id = db_service.save_summary_session(summary, fetch_time)
             db_service.save_email_summaries(session_id, summary['emails'])
-            
-            print(f"Summary saved with session ID: {session_id}")
-            print(f"Summary: {summary['summary']}")
-            
-            # Display individual emails for review
-            if summary['emails']:
-                print("\nProfessional emails found:")
-                for i, email in enumerate(summary['emails'], 1):
-                    priority_emoji = {
-                        'URGENT': '🚨',
-                        'HIGH': '🔴', 
-                        'MEDIUM': '🟡',
-                        'LOW': '🔵'
-                    }.get(email['priority'], '⚪')
-                    
-                    print(f"  {i}. {priority_emoji} [{email['priority']}] {email['company']} - {email['subject'][:50]}...")
+
+            logger.info("Finished all processing")
             
     except Exception as e:
         print(f"Error during processing: {e}")

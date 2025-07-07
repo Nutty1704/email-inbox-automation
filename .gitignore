@@ -29,6 +29,10 @@ wheels/
 .installed.cfg
 *.egg
 
+# JavaScript
+node_modules/
+package-lock.json
+
 # Environment variables (your email credentials!)
 .env
 config.ini

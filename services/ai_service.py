@@ -53,7 +53,7 @@ class AIService:
         Analyze these emails and return ONLY relevant professional emails in this exact JSON format:
 
         {{
-        "summary": "Brief overview of findings",
+        "summary": "Brief overview of findings, include the number of emails analyzed and breif description of urgent tasks if any",
         "emails": [
             {{
             "priority": "URGENT|HIGH|MEDIUM|LOW",
@@ -71,18 +71,18 @@ class AIService:
         }}
 
         PRIORITY RULES:
-        - Job interviews/offers = URGENT
-        - Job application updates/rejections/recruiter messages = HIGH  
-        - LinkedIn messages/connections = MEDIUM
-        - LinkedIn job alerts/updates = LOW
+        - Job interviews/offers/rejections/application updates = URGENT
+        - LinkedIn messages or any other professional networking = HIGH
+        - LinkedIn connection requests = MEDIUM
+        - LinkedIn job alerts/recommendations = LOW
 
         INCLUDE ONLY:
         - Job applications, interviews, recruiter outreach
-        - LinkedIn connection requests, messages, endorsements
-        - LinkedIn job alerts, profile views
+        - LinkedIn connection requests, messages
         - Professional networking emails
 
         IGNORE COMPLETELY:
+        - Job recommendations
         - Shopping/promotional emails
         - Transaction receipts  
         - Newsletters (non-professional)
