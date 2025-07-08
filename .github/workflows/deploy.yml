@@ -1,0 +1,33 @@
+name: Deploy Discord Bot
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'discord_bot/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy via SSH
+        run: |
+          ssh ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
+            cd /root/email-inbox-automation
+            git pull origin main
+            cd /root/email-inbox-automation/discord_bot
+            npm install
+            pm2 restart Notify-discord-bot || pm2 start index.js --name Notify-discord-bot
+          EOF
