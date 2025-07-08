@@ -37,7 +37,11 @@ User on Discord (DM)
 git clone https://github.com/Nutty1704/email-inbox-automation.git
 cd email-inbox-automation
 cp .env.sample .env
-# Fill in your credentials in .env
+# Fill in your credentials in .env (email configuration, supabase configuration, gemini api key, etc)
+
+cd ./discord_bot
+cp .env.sample .env
+# Fill in your credentials in .env for discord bot (token, user id, etc)
 ```
 
 ### 2. Gmail Setup
