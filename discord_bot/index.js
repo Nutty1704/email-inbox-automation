@@ -1,7 +1,7 @@
 import 'dotenv/config';
 
 import { Client, GatewayIntentBits } from 'discord.js';
-import { setupRealtimeSubscription } from './utils/dbSubscription.js';
+import { maintainRealtimeConnection } from './utils/dbSubscription.js';
 import { loadCommands, registerCommands } from './handlers/commandHandlers.js';
 
 
@@ -18,7 +18,7 @@ client.once('ready', async () => {
     const user_id = process.env.DISCORD_USER_ID;
     const user = await client.users.fetch(user_id);
     
-    setupRealtimeSubscription(user);
+    maintainRealtimeConnection(user);
 });
 
 

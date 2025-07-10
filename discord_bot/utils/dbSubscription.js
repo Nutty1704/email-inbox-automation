@@ -1,28 +1,48 @@
 import supabase from "../config/database.js";
 import { createSummaryEmbed } from "./embeds.js";
 
-
-export function setupRealtimeSubscription(user) {
+export async function maintainRealtimeConnection(user) {
     console.log('Setting up real-time subscription...');
-    
-    const subscription = supabase
-        .channel('summary_sessions')
-        .on('postgres_changes', {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'summary_sessions'
-        }, async (payload) => {            
-            // Send notification to user
-            setTimeout(async () => {
-                await handleNewSummary(user, payload.new);
-            }, 60000);
-        })
-        .subscribe((status) => {
-            console.log('Subscription status:', status);
-            if (status === 'SUBSCRIBED') {
-                console.log('Real-time subscription active!');
+    while (true) {
+        try {
+            const result = await setupRealtimeSubscription(user);
+
+            if (result === 'CHANNEL_ERROR') {
+                await new Promise(resolve => setTimeout(resolve, 1000)); // try again in 1 second
             }
-        });
+
+        } catch (error) {
+            console.error('Unexpected error in subscription loop:', error);
+            await new Promise(resolve => setTimeout(resolve, 5000)); // try again in 5 seconds
+        }
+    }
+}
+
+async function setupRealtimeSubscription(user) {
+    const channel = supabase.channel('summary_sessions');
+
+    return new Promise((resolve) => {
+        const subscription = channel
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'summary_sessions'
+            }, async (payload) => {
+                // Send notification to user
+                setTimeout(async () => {
+                    await handleNewSummary(user, payload.new);
+                }, 60000);
+            })
+            .subscribe((status) => {
+                console.log('Subscription status:', status);
+                if (status === 'SUBSCRIBED') {
+                    console.log('Real-time subscription active!');
+                } else if (status === 'CHANNEL_ERROR') {
+                    supabase.removeChannel(channel);
+                    resolve('CHANNEL_ERROR');
+                }
+            });
+    })
 }
 
 async function handleNewSummary(user, sessionData) {
@@ -45,12 +65,12 @@ async function handleNewSummary(user, sessionData) {
 
         // Create Discord embed
         const embed = createSummaryEmbed(sessionData, emails);
-        
+
         // Send to user
         await user.send({ embeds: [embed] });
-        
+
         console.log(`Sent summary notification with ${emails.length} emails`);
-        
+
     } catch (error) {
         console.error('Error handling new summary:', error);
     }
