@@ -1,7 +1,7 @@
 import os
 import logging
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timezone
 from services.email_service import EmailService
 from services.ai_service import AIService
 from services.db_service import DatabaseService
@@ -45,7 +45,7 @@ def main():
             
             logger.info(f"Fetching emails since: {last_run}")
             
-            fetch_time = datetime.now()
+            fetch_time = datetime.now(timezone.utc)
             # Fetch emails since the timestamp
             emails = mail_service.get_emails_since(since=last_run)
             

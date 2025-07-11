@@ -3,7 +3,7 @@ import email
 from email.message import Message as EmailMessage
 from email.header import decode_header
 from typing import List, Optional, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from models import Email
 
 
@@ -113,7 +113,9 @@ class EmailService:
             return None
         
         try:
-            return email.utils.parsedate_to_datetime(date_string)
+            dt = email.utils.parsedate_to_datetime(date_string)
+            # Convert to UTC for consistent comparison
+            return dt.astimezone(timezone.utc)
         except Exception as e:
             print(f"Failed to parse email date: {e}")
             return None

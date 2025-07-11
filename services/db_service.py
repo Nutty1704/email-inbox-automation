@@ -74,11 +74,19 @@ class DatabaseService:
             .execute()
         )
         
-        if not response:
+        if not response or not response.data:
             return None
 
         try:
-            return datetime.fromisoformat(response.data['created_at'].replace('Z', '+00:00'))
-        except ValueError as e:
+            timestamp_str = response.data['created_at']
+            
+            # Handle different timezone formats
+            if timestamp_str.endswith('Z'):
+                timestamp_str = timestamp_str.replace('Z', '+00:00')
+            elif timestamp_str.endswith('+00'):
+                timestamp_str = timestamp_str.replace('+00', '+00:00')
+            
+            return datetime.fromisoformat(timestamp_str)
+        except (ValueError, KeyError) as e:
             print(f"Failed to parse last run time: {e}")
-            return None
+        return None
