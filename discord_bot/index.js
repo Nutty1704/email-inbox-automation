@@ -1,7 +1,7 @@
 import 'dotenv/config';
 
 import { Client, GatewayIntentBits } from 'discord.js';
-import { maintainRealtimeConnection } from './utils/dbSubscription.js';
+import { maintainRealtimeConnection } from './utils/db-utils.js';
 import { loadCommands, registerCommands } from './handlers/commandHandlers.js';
 
 

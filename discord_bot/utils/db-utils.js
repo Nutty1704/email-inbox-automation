@@ -48,15 +48,7 @@ async function setupRealtimeSubscription(user) {
 async function handleNewSummary(user, sessionData) {
     try {
         // Get the email summaries for this session
-        const { data: emails, error } = await supabase
-            .from('email_summaries')
-            .select('*')
-            .eq('session_id', sessionData.id);
-
-        if (emails) {
-            const priorityOrder = { 'URGENT': 1, 'HIGH': 2, 'MEDIUM': 3, 'LOW': 4 };
-            emails.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
-        }
+        const { emails, error } = await getEmailsBySession(sessionData.id);
 
         if (error) {
             console.error('Error fetching emails:', error);
@@ -74,4 +66,19 @@ async function handleNewSummary(user, sessionData) {
     } catch (error) {
         console.error('Error handling new summary:', error);
     }
+}
+
+
+export async function getEmailsBySession(session_id) {
+    const { data: emails, error } = await supabase
+        .from('email_summaries')
+        .select('*')
+        .eq('session_id', session_id);
+
+    if (emails) {
+        const priorityOrder = { 'URGENT': 1, 'HIGH': 2, 'MEDIUM': 3, 'LOW': 4 };
+        emails.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+    }
+
+    return { emails, error };
 }
